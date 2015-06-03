@@ -68,13 +68,18 @@ module Recaptcha
       error = options[:error] ||= ((defined? flash) ? flash[:recaptcha_error] : "")
       uri   = Recaptcha.configuration.api_server_url(options[:ssl])
       uri += "?hl=#{options[:hl]}" unless options[:hl].blank?
-      
+
       v2_options = options.slice(:theme, :type, :callback).map {|k,v| %{data-#{k}="#{v}"} }.join(" ")
 
+      if options[:iubenda]
+        script="<script src='#{uri}' async defer type='text/plain' class='_iub_cs_activate'></script>\n"
+      else
+        script="<script src='#{uri}' async defer></script>\n"
+      end
       html = ""
-      html << %{<script src="#{uri}" async defer></script>\n}
+      html << script
       html << %{<div class="g-recaptcha" data-sitekey="#{key}" #{v2_options}></div>\n}
-    
+
       unless options[:noscript] == false
         fallback_uri = "#{uri.chomp('.js')}/fallback?k=#{key}"
         html << %{<noscript>}
